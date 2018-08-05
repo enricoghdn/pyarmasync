@@ -1,6 +1,6 @@
 # --------------------------------License Notice----------------------------------
 # pyarmasync - Arma3 mod synchronization tool
-# 
+#
 # Copyright (C) 2018 Enrico Ghidoni (enricoghdn@gmail.com)
 # Copyright (C) 2018 Carpe Noctem - Tactical Operations (aka. CNTO) (contact@carpenoctem.co)
 #
