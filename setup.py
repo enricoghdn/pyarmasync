@@ -33,17 +33,17 @@ import setuptools
 if __name__ == '__main__':
     ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
-    # Use README.rst as source for setuptools.setup's long_description param
-    with codecs.open(os.path.join(ROOT_DIR, 'README.rst'),
+    # Use README.md as source for setuptools.setup's long_description param
+    with codecs.open(os.path.join(ROOT_DIR, 'README.md'),
                      encoding='utf-8') as f:
         LONG_DESCRIPTION = f.read()
 
     setuptools.setup(
         # Distutils parameters
         name='pyarmasync',
-        description='Carpe Noctem Tactical Operations ArmA3 mod synchronization tool',
+        description='Open Source ArmA3 mod synchronization tool',
         long_description=LONG_DESCRIPTION,
-        author='Carpe Noctem Tactical Operations developers',
+        author='Enrico Ghidoni',
         url='https://github.com/enricoghdn/pyarmasync',
         packages=setuptools.find_packages(exclude=['tests']),
         classifiers=[
