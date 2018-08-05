@@ -1,5 +1,7 @@
 # --------------------------------License Notice----------------------------------
-# CNTOSync - Carpe Noctem Tactical Operations ArmA3 mod synchronization tool
+# pyarmasync - Arma3 mod synchronization tool
+# 
+# Copyright (C) 2018 Enrico Ghidoni (enricoghdn@gmail.com)
 # Copyright (C) 2018 Carpe Noctem - Tactical Operations (aka. CNTO) (contact@carpenoctem.co)
 #
 # The authors of this software are listed in the AUTHORS file at the
@@ -38,11 +40,11 @@ if __name__ == '__main__':
 
     setuptools.setup(
         # Distutils parameters
-        name='CNTOSync',
+        name='pyarmasync',
         description='Carpe Noctem Tactical Operations ArmA3 mod synchronization tool',
         long_description=LONG_DESCRIPTION,
         author='Carpe Noctem Tactical Operations developers',
-        url='https://github.com/CntoDev/CNTOSync/',
+        url='https://github.com/enricoghdn/pyarmasync',
         packages=setuptools.find_packages(exclude=['tests']),
         classifiers=[
             'Development Status :: 2 - Pre-Alpha',
@@ -63,7 +65,7 @@ if __name__ == '__main__':
             'Topic :: Utilities',
         ],
         license='GNU General Public License Version 3',
-        keywords='cnto carpe noctem arma3 mods sync synchronisation http',
+        keywords='arma3 mods sync synchronisation http',
         # Setuptools parameters
         include_package_data=True,
         install_requires=[

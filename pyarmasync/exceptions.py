@@ -1,5 +1,7 @@
 # --------------------------------License Notice----------------------------------
-# CNTOSync - Carpe Noctem Tactical Operations ArmA3 mod synchronization tool
+# pyarmasync - Arma3 mod synchronization tool
+# 
+# Copyright (C) 2018 Enrico Ghidoni (enricoghdn@gmail.com)
 # Copyright (C) 2018 Carpe Noctem - Tactical Operations (aka. CNTO) (contact@carpenoctem.co)
 #
 # The authors of this software are listed in the AUTHORS file at the
@@ -20,4 +22,22 @@
 # All rights reserved.
 # --------------------------------License Notice----------------------------------
 
-"""CNTOSync init module."""
+"""This module contains the set of custom exceptions used."""
+
+from typing import Sequence
+
+
+class InvalidURL(ValueError):
+    """The URL format is invalid."""
+
+    pass
+
+
+class UnsupportedURLSchema(ValueError):
+    """The URL is not supported."""
+
+    def __init__(self, supported_schemas: Sequence, *args: str) -> None:
+        """Initialize UnsupportedURLSchema with `supported_schemas`."""
+        self.supported_schemas: Sequence = supported_schemas
+
+        super().__init__(*args)

@@ -1,7 +1,7 @@
-cntosync
-========
+pyarmasync
+==========
 
 .. toctree::
    :maxdepth: 4
 
-   cntosync
+   pyarmasync

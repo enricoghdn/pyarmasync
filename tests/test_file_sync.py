@@ -1,5 +1,7 @@
 # --------------------------------License Notice----------------------------------
-# CNTOSync - Carpe Noctem Tactical Operations ArmA3 mod synchronization tool
+# pyarmasync - Arma3 mod synchronization tool
+# 
+# Copyright (C) 2018 Enrico Ghidoni (enricoghdn@gmail.com)
 # Copyright (C) 2018 Carpe Noctem - Tactical Operations (aka. CNTO) (contact@carpenoctem.co)
 #
 # The authors of this software are listed in the AUTHORS file at the
@@ -20,14 +22,14 @@
 # All rights reserved.
 # --------------------------------License Notice----------------------------------
 
-"""Test suite for `cntosync.filesync`."""
+"""Test suite for `pyarmasync.filesync`."""
 
 import os
 from unittest.mock import call
 
-import cntosync.configuration as config
-import cntosync.filesync as unit
-from cntosync import exceptions
+import pyarmasync.configuration as config
+import pyarmasync.filesync as unit
+from pyarmasync import exceptions
 
 import pytest
 
@@ -40,8 +42,8 @@ class CommonMock(object):
         self.mock_path_isdir = mocker.patch('os.path.isdir')
         self.mock_makedirs = mocker.patch('os.makedirs')
         self.mock_open = mocker.patch('builtins.open')
-        self.mock_valid_url = mocker.patch('cntosync.filesync.valid_url', return_value=True)
-        self.mock_check_presence = mocker.patch('cntosync.filesync.Repository.check_presence')
+        self.mock_valid_url = mocker.patch('pyarmasync.filesync.valid_url', return_value=True)
+        self.mock_check_presence = mocker.patch('pyarmasync.filesync.Repository.check_presence')
         self.mock_packb = mocker.patch('msgpack.packb')
 
 
