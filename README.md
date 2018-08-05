@@ -24,6 +24,10 @@ All rights reserved.
 
 # Open Source ArmA3 mod synchronization tool
 
+[![Build Status](https://travis-ci.com/enricoghdn/pyarmasync.svg?branch=develop)](https://travis-ci.com/enricoghdn/pyarmasync)
+[![Coverage Status](https://coveralls.io/repos/github/enricoghdn/pyarmasync/badge.svg)](https://coveralls.io/github/enricoghdn/pyarmasync)
+[![Requirements Status](https://requires.io/github/enricoghdn/pyarmasync/requirements.svg?branch=develop)](https://requires.io/github/enricoghdn/pyarmasync/requirements/?branch=develop)
+
 *pyarmasync* is an ArmA3 mod repository synchronization tool. This tool allows for members of an
 ArmA3 community to download and keep updated a set of mods and addons against a central
 HTTP-served repository.
