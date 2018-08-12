@@ -27,18 +27,8 @@
 import os
 import zlib
 from typing import Dict, Iterable, List
-from urllib.parse import urlparse
 
-import msgpack
-
-from . import configuration, exceptions
-
-
-def valid_url(url: str) -> bool:
-    """Check if string `url` is a valid URL compliant to RFC2396."""
-    parsed_url = urlparse(url)
-
-    return all([parsed_url.scheme, parsed_url.netloc])
+from . import configuration, utils
 
 
 def list_files(path: str, bl_subdirs: Iterable[str] = None, bl_extensions: Iterable[str] = None) \
@@ -79,14 +69,12 @@ def file_checksum(path: str) -> int:
 
 
 class Repository(object):
-    """Wrap operations on a directory that logically contains a repository."""
+    """Wrap operations on a directory that contains a repository."""
 
-    supported_url_schemas = ('file', 'http', 'https')
-
-    def __init__(self, path: str, url: str = None, display_name: str = None) -> None:
+    def __init__(self, path: str, url: str, display_name: str = None) -> None:
         """Initialize object properties."""
         self.repo_path: str = os.path.abspath(path)
-        self.url = url
+        self.url = utils.RepositoryURL(url)
         self.display_name = display_name
         self.config_version = configuration.version
 
@@ -116,12 +104,6 @@ class Repository(object):
     def initialize(cls, directory: str, display_name: str, url: str, overwrite: bool = False) \
             -> 'Repository':
         """Create new repository using `directory` as location."""
-        if not valid_url(url):
-            raise exceptions.InvalidURL('URL is not valid')
-        parsed_url = urlparse(url)
-        if parsed_url.scheme not in cls.supported_url_schemas:
-            raise exceptions.UnsupportedURLSchema(cls.supported_url_schemas)
-
         path = os.path.abspath(directory)
         if not os.path.isdir(path):
             try:
@@ -130,7 +112,7 @@ class Repository(object):
                 raise
 
         if cls.check_presence(directory) and not overwrite:
-            return cls(directory)
+            return cls(directory, url)
 
         index_directory_path = os.path.join(directory, configuration.index_directory)
         os.makedirs(index_directory_path, exist_ok=True)
@@ -140,12 +122,11 @@ class Repository(object):
                             'configuration_version': configuration.version,
                             'index_file_name': configuration.index_file,
                             'sync_file_extension': configuration.extension}
-        with open(index_file_path, mode='wb') as index_file:
-            index_file.write(msgpack.packb(repository_index))
 
-        return cls(directory)
+        utils.write_metadata(index_file_path, repository_index)
 
-    # TODO: needs further documentation
+        return cls(directory, url)
+
     def build(self) -> None:
         """Update repository to reflect file changes."""
         self._clean_tree()
@@ -159,7 +140,6 @@ class Repository(object):
         self._update_tree_file()
         self._clean_repository()
 
-    # TODO: improve/extend documentation
     def _detect_updated_files(self) -> Dict[str, int]:
         """Return updated files path and whole file checksum."""
         file_list = list_files(self.repo_path, [self._index_subdir],
@@ -180,28 +160,25 @@ class Repository(object):
 
     def _update_index_file(self) -> None:
         """Update repository index file to reflect object status."""
-        content = {'display_name': self.display_name, 'url': self.url,
+        content = {'display_name': self.display_name, 'url': self.url.url,
                    'configuration_version': self.config_version,
                    'index_file_path': self._relative_to_repo(self._index_file_path),
                    'tree_file_path': self._relative_to_repo(self._tree_file_path),
                    'sync_file_extension': self._sync_file_extension,
                    }
 
-        with open(self._index_file_path, mode='wb') as index_file:
-            index_file.write(msgpack.packb(content))
+        utils.write_metadata(self._index_file_path, content)
 
     def _update_tree_file(self) -> None:
         """Update repository tree file according to object's tree."""
-        with open(self._tree_file_path, mode='wb') as tree_file:
-            tree_file.write(msgpack.packb(self.file_checksums))
+        utils.write_metadata(self._tree_file_path, self.file_checksums)
 
     def _update_synchronization_file(self, file: str) -> None:
         """Generate and store synchronization data for `file`."""
         sync_data: int = self.file_checksums[file]
-
         sync_file_path: str = file + self._sync_file_extension
-        with open(sync_file_path, mode='w+b') as sync_file:
-            sync_file.write(msgpack.packb(sync_data))
+
+        utils.write_metadata(sync_file_path, sync_data)
 
     def _clean_repository(self) -> None:
         """Remove orphaned synchronization files."""

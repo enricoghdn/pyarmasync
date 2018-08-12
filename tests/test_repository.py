@@ -22,13 +22,13 @@
 # All rights reserved.
 # --------------------------------License Notice----------------------------------
 
-"""Test suite for `pyarmasync.filesync`."""
+"""Test suite for `pyarmasync.repository`."""
 
 import os
 from unittest.mock import call
 
 import pyarmasync.configuration as config
-import pyarmasync.filesync as unit
+import pyarmasync.repository as unit
 from pyarmasync import exceptions
 
 import pytest
@@ -42,8 +42,8 @@ class CommonMock(object):
         self.mock_path_isdir = mocker.patch('os.path.isdir')
         self.mock_makedirs = mocker.patch('os.makedirs')
         self.mock_open = mocker.patch('builtins.open')
-        self.mock_valid_url = mocker.patch('pyarmasync.filesync.valid_url', return_value=True)
-        self.mock_check_presence = mocker.patch('pyarmasync.filesync.Repository.check_presence')
+        self.mock_valid_url = mocker.patch('pyarmasync.repository.valid_url', return_value=True)
+        self.mock_check_presence = mocker.patch('pyarmasync.repository.Repository.check_presence')
         self.mock_packb = mocker.patch('msgpack.packb')
 
 
@@ -146,28 +146,4 @@ def test_init_repo_permission_denied(common_mock):
     common_mock.mock_makedirs.side_effect = PermissionError
 
     with pytest.raises(PermissionError):
-        unit.Repository.initialize(directory, name, url)
-
-
-def test_init_repo_unsupported_schema():
-    """Assert exception is raised if unsupported url schema is passed."""
-    directory = '/test'
-    name = ''
-    url = 'sftp://something'
-
-    with pytest.raises(exceptions.UnsupportedURLSchema):
-        unit.Repository.initialize(directory, name, url)
-
-
-@pytest.mark.parametrize('url', [
-    'http://',
-    'ftp:/malformed',
-    '://onlyhost',
-])
-def test_init_repo_invalid_url(url):
-    """Assert exception is raised if invalid url is passed."""
-    directory = '/test'
-    name = ''
-
-    with pytest.raises(exceptions.InvalidURL):
         unit.Repository.initialize(directory, name, url)
