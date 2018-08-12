@@ -76,8 +76,8 @@ if __name__ == '__main__':
                 'ipython>=6.1,<7',
             ],
             'test': [
-                'tox>=2.7,<3',
-                'pytest>=3.0,<4',
+                'tox>=3.2.1,<4',
+                'pytest>=3.4.2,<4',
                 'pytest-mock>=1.5,<2',
             ],
             'docs': [
