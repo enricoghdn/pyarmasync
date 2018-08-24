@@ -24,8 +24,11 @@
 
 """Provide access to the configuration."""
 
+# Common configuration parameters
 version = '0.1.0'
 index_directory = '.pyarmasync'
+
+# Repository-specific parameters
 index_file = 'repoinfo'
 extension = '.pyarmasync'
 tree_file = 'repotree'
