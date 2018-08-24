@@ -27,6 +27,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import msgpack
+import os
 
 from . import exceptions
 
@@ -62,12 +63,18 @@ class RepositoryURL(object):
 
 def write_metadata(to: str, data: Any) -> None:
     """Persist application metadata ensuring a consistent format is used."""
+    try:
+        os.makedirs(os.path.dirname(to), exist_ok=True)
+    except PermissionError:
+        raise
     with open(to, mode='w+b') as dest:
         dest.write(msgpack.packb(data))
 
 
 def read_metadata(file: str) -> Any:
     """Read application metadata from file."""
+    if not os.path.isfile(file):
+        raise ValueError("Not a file.")
     with open(file, mode='r+b') as source:
         content = source.read()
 
