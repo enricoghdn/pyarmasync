@@ -34,6 +34,8 @@ HTTP-served repository.
 
 *This software is currently under heavy development and is not ready to be used yet.*
 
+You can take a look at the project's roadmap [here](https://trello.com/b/zfXl4aGl).
+
 Requirements
 ------------
 
