@@ -32,3 +32,6 @@ index_directory = '.pyarmasync'
 index_file = 'repoinfo'
 extension = '.pyarmasync'
 tree_file = 'repotree'
+
+# Client-specific parameters
+client_index = 'clientinfo'
