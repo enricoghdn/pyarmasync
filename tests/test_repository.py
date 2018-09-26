@@ -29,7 +29,6 @@ from unittest.mock import call
 
 import pyarmasync.configuration as config
 import pyarmasync.repository as unit
-from pyarmasync import exceptions
 
 import pytest
 
@@ -42,7 +41,7 @@ class CommonMock(object):
         self.mock_path_isdir = mocker.patch('os.path.isdir')
         self.mock_makedirs = mocker.patch('os.makedirs')
         self.mock_open = mocker.patch('builtins.open')
-        self.mock_valid_url = mocker.patch('pyarmasync.repository.valid_url', return_value=True)
+        self.mock_valid_url = mocker.patch('pyarmasync.utils.RepositoryURL')
         self.mock_check_presence = mocker.patch('pyarmasync.repository.Repository.check_presence')
         self.mock_packb = mocker.patch('msgpack.packb')
 
@@ -79,7 +78,7 @@ def test_init_repo_creation_ok(common_mock):
     common_mock.mock_makedirs.assert_called_with(os.path.join(directory, config.index_directory),
                                                  exist_ok=True)
     common_mock.mock_open.assert_called_with(os.path.join(directory, config.index_directory,
-                                                          config.index_file), mode='wb')
+                                                          config.index_file), mode='w+b')
 
 
 def test_init_repo_index_ok(common_mock):

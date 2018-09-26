@@ -31,7 +31,7 @@ from . import configuration, utils
 class Client(object):
     """Provide operations on a repository client."""
 
-    def __init__(self, path: str, repository_url: str) -> None:
+    def __init__(self, path: str, repository_url: str) -> None: # pragma: no-cover
         """Initialize object."""
         self.path = path
         self.remote = Remote(repository_url)
@@ -52,25 +52,28 @@ class Client(object):
     @classmethod
     def create(cls, path: str, url: str, overwrite: bool) -> 'Client':
         """Create new client at `path` linked with repository at `url`."""
-        abs_path = os.path.abspath(path)
-        if not os.path.isdir(abs_path):
+        client_path = os.path.abspath(path)
+        if not os.path.isdir(client_path):
             try:
-                os.makedirs(abs_path, exist_ok=True)
+                os.makedirs(client_path, exist_ok=True)
             except PermissionError:
                 raise
 
-        index_dir = os.path.join(abs_path, configuration.index_directory)
+        index_dir = os.path.join(client_path, configuration.index_directory)
         index_file = os.path.join(index_dir, configuration.client_index)
 
-        if cls.check_presence(abs_path) and not overwrite:
+        if cls.check_presence(client_path) and not overwrite:
                 index_content = utils.read_metadata(index_file)
-                return cls(abs_path, index_content['remote_url'])
+                return cls(client_path, index_content['remote_url'])
 
         # Create index directory and file
-        
+
         os.makedirs(index_dir, exist_ok=True)
         index_content = {'remote_url': url, 'configuration_version': configuration.version}
         utils.write_metadata(index_file, index_content)
+
+        # Return newly created client
+        return cls(client_path, url)
 
 
 class Remote(object):
@@ -81,6 +84,6 @@ class Remote(object):
         self._url = utils.RepositoryURL(url)
 
     @property
-    def url(self):
+    def url(self) -> str:
         """Hide internal usage of `RepositoryURL`."""
         return self._url.url

@@ -21,4 +21,17 @@
 # All rights reserved.
 # --------------------------------License Notice----------------------------------
 
-"""tests init module."""
+"""Test suite for `pyarmasync.client`."""
+
+import pyarmasync.client as unit
+
+import pytest
+
+
+@pytest.mark.parametrize('isdir_outcome,result', [(True, True), (False, False)])
+def test_check_presence(mocker, isdir_outcome, result):
+    """Assert True is returned when directory is a Client."""
+    mocker.patch('os.path.isdir', return_value=isdir_outcome)
+    mocker.patch('os.path.isfile')
+
+    assert unit.Client.check_presence('foo') == result

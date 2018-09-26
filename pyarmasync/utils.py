@@ -23,11 +23,11 @@
 
 """Collection of utility classes, methods and variables."""
 
+import os
 from typing import Any
 from urllib.parse import urlparse
 
 import msgpack
-import os
 
 from . import exceptions
 
@@ -36,14 +36,13 @@ class RepositoryURL(object):
     """Ensure URLs pointing to repositories are valid across the whole system."""
 
     supported_url_schemas = ('file', 'http', 'https')
-    url = None
 
     def __init__(self, url: str) -> None:
         """Initialize object."""
         if not self.valid_url(url):
-            raise exceptions.InvalidURL("URL must be compliant to RFC2396")
+            raise exceptions.InvalidURL('URL must be compliant to RFC2396')
         if not self.supported_url(url):
-            raise exceptions.UnsupportedURLSchema("URL schema is not supported")
+            raise exceptions.UnsupportedURLSchema('URL schema is not supported')
         self.url = url
 
     @staticmethod
@@ -74,7 +73,7 @@ def write_metadata(to: str, data: Any) -> None:
 def read_metadata(file: str) -> Any:
     """Read application metadata from file."""
     if not os.path.isfile(file):
-        raise ValueError("Not a file.")
+        raise ValueError('Not a file.')
     with open(file, mode='r+b') as source:
         content = source.read()
 

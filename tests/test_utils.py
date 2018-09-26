@@ -23,11 +23,12 @@
 
 """Test suite for `pyarmasync.utils`."""
 
+import msgpack
+
 import pyarmasync.exceptions as exceptions
 import pyarmasync.utils as unit
 
 import pytest
-import msgpack
 
 
 @pytest.mark.parametrize('url', [
@@ -44,7 +45,12 @@ def test_repository_url_invalid_url(url):
 def test_init_repo_unsupported_schema():
     """Assert exception is raised if unsupported url schema is passed."""
     with pytest.raises(exceptions.UnsupportedURLSchema):
-        unit.RepositoryURL("sftp://something")
+        unit.RepositoryURL('sftp://something')
+
+
+def test_init_ok():
+    """Assert object creation works fine."""
+    unit.RepositoryURL('http://foo')
 
 
 def test_write_metadata(mocker):
@@ -60,9 +66,18 @@ def test_write_metadata(mocker):
     mock_open.return_value.__enter__.return_value.write.assert_called_with(expected_content)
 
 
+def test_write_permission_error(mocker):
+    """Assert PermissionError is raised."""
+    mocker.patch('os.makedirs', side_effect=PermissionError)
+
+    with pytest.raises(PermissionError):
+        unit.write_metadata('foo', None)
+
+
 def test_read_metadata(mocker):
     """Assert data is read correctly."""
     mock_open = mocker.patch('builtins.open')
+    mocker.patch('os.path.isfile', return_value=True)
 
     expected_content = {'foo': 'bar', 'baz': 5}
     content = msgpack.packb(expected_content)
@@ -73,3 +88,11 @@ def test_read_metadata(mocker):
     result = unit.read_metadata(filename)
 
     assert result == expected_content
+
+
+def test_read_metadata_not_a_file(mocker):
+    """Assert ValueError is passed if path is not a file."""
+    mocker.patch('os.path.isfile', return_value=False)
+
+    with pytest.raises(ValueError):
+        unit.read_metadata('file')
