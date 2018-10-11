@@ -31,7 +31,7 @@ from . import configuration, utils
 class Client(object):
     """Provide operations on a repository client."""
 
-    def __init__(self, path: str, repository_url: str) -> None: # pragma: no-cover
+    def __init__(self, path: str, repository_url: str) -> None:  # pragma: no-cover
         """Initialize object."""
         self.path = path
         self.remote = Remote(repository_url)
@@ -62,7 +62,8 @@ class Client(object):
         index_dir = os.path.join(client_path, configuration.index_directory)
         index_file = os.path.join(index_dir, configuration.client_index)
 
-        if cls.check_presence(client_path) and not overwrite:
+        if not overwrite and cls.check_presence(client_path):
+                # Found existing client, not overwriting, read existing configuration
                 index_content = utils.read_metadata(index_file)
                 return cls(client_path, index_content['remote_url'])
 
