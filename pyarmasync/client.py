@@ -24,6 +24,9 @@
 """Module for repository consumer operations."""
 
 import os
+import urllib
+from abc import ABCMeta, abstractmethod
+from typing import Dict
 
 from . import configuration, utils
 
@@ -34,7 +37,7 @@ class Client(object):
     def __init__(self, path: str, repository_url: str) -> None:  # pragma: no-cover
         """Initialize object."""
         self.path = path
-        self.remote = Remote(repository_url)
+        self.proxy = Proxy.factory(repository_url)
 
     @staticmethod
     def check_presence(path: str) -> bool:
@@ -77,14 +80,72 @@ class Client(object):
         return cls(client_path, url)
 
 
-class Remote(object):
-    """Middleware to access a repository."""
+class Proxy(metaclass=ABCMeta):
+    """Base class for proxy components."""
+
+    @staticmethod
+    def factory(url: str) -> 'Proxy':  # noqa: D401
+        """Factory method to get the proper proxy based on the url scheme."""
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme == 'http' or parsed.scheme == 'https':
+            return WebProxy(url)
+        elif parsed.scheme == 'file':
+            return LocalProxy(url)
+        else:
+            raise ValueError('Unsupported scheme.')
 
     def __init__(self, url: str) -> None:
         """Initialize object."""
         self._url = utils.RepositoryURL(url)
 
+    @abstractmethod
+    def repository_index(self) -> Dict:
+        """Get repository index dictionary."""
+        pass
+
+    @abstractmethod
+    def repository_tree(self) -> Dict[str, int]:
+        """Get repository tree."""
+
+    @abstractmethod
+    def sync_file(self, file: str) -> bytes:
+        """Get sync file for `file`."""
+
     @property
     def url(self) -> str:
         """Hide internal usage of `RepositoryURL`."""
         return self._url.url
+
+
+class WebProxy(Proxy):
+    """Proxy implementation for http/https protocols."""
+
+    def __init__(self, url: str) -> None:
+        """Initialize object."""
+        super().__init__(url)
+
+    def repository_index(self) -> Dict:  # noqa: D102
+        pass
+
+    def repository_tree(self) -> Dict[str, int]:  # noqa: D102
+        pass
+
+    def sync_file(self, file: str) -> bytes:  # noqa: D102
+        pass
+
+
+class LocalProxy(Proxy):
+    """Proxy implementation for local files."""
+
+    def __init__(self, url: str) -> None:
+        """Initialize object."""
+        super().__init__(url)
+
+    def repository_index(self) -> Dict:  # noqa: D102
+        pass
+
+    def repository_tree(self) -> Dict[str, int]:  # noqa: D102
+        pass
+
+    def sync_file(self, file: str) -> bytes:  # noqa: D102
+        pass
