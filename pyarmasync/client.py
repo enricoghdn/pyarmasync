@@ -25,6 +25,7 @@
 
 import os
 import urllib
+import urllib.request
 from abc import ABCMeta, abstractmethod
 from typing import Dict
 
@@ -118,14 +119,49 @@ class Proxy(metaclass=ABCMeta):
 
 
 class WebProxy(Proxy):
-    """Proxy implementation for http/https protocols."""
+    r"""Proxy implementation for http/https protocols.
+
+    This proxy will make http/https requests to the indicated repository url, thus a web server
+    must be correctly configured to properly serve such requests.
+    The proxy will append to the provided ``url`` the relative path of the files it needs.
+    There are three kind of files the proxy will make requests for:
+
+        - index file: its relative path is ``configuration.index_directory``/ \
+        ``configuration.index_file``
+
+        - tree file : its relative path is ``configuration.index_directory``/ \
+        ``configuration.tree_file``
+
+        - sync files: as many as the files to keep synchronized, sync files are located in the \
+        repository's main directory
+
+    Example:
+        Taking as example a repository with url = 'http://foo.com/bar/repo' containing a single
+        file named ``lorem`` in its main directory, this proxy will make the following http
+        requests:
+
+        - index file: 'http://foo.com/bar/repo/.pyarmasync/repoinfo'
+        - tree file : 'http://foo.com/bar/repo/.pyarmasync/repotree'
+        - sync file : 'http://foo.com/bar/repo/lorem.pyarmasync'
+
+    Notes:
+
+        - The relative path is based on the above mentioned configuration parameters.
+        - The proxy will make a sync file request for every file in the repository. This accounts \
+        for a total of N+2 requests where N is the amount of files contained by the repository.
+    """
 
     def __init__(self, url: str) -> None:
         """Initialize object."""
         super().__init__(url)
 
     def repository_index(self) -> Dict:  # noqa: D102
-        pass
+        response = urllib.request.urlopen(self.url)
+        if response.code not in range(200, 299):
+            raise ConnectionError(response.reason)
+        bin_content = response.read()
+
+        return utils.from_persistence_format(bin_content)
 
     def repository_tree(self) -> Dict[str, int]:  # noqa: D102
         pass
