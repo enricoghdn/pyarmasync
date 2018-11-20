@@ -21,13 +21,20 @@
 # All rights reserved.
 # --------------------------------License Notice----------------------------------
 
-"""Collection of utility classes, methods and variables."""
+"""
+Collection of utility classes, methods and variables.
+
+This package also contains functions used by different components to provide a common standard
+concerning paths and serialization of application data.
+"""
 
 import os
 from typing import Any
 from urllib.parse import urlparse
 
 import msgpack
+
+from pyarmasync import configuration
 
 from . import exceptions
 
@@ -61,20 +68,40 @@ class RepositoryURL(object):
 
 
 def write_metadata(to: str, data: Any) -> None:
-    """Persist application metadata ensuring a consistent format is used."""
+    """Write application metadata on a file ensuring a consistent format is used."""
     try:
         os.makedirs(os.path.dirname(to), exist_ok=True)
     except PermissionError:
         raise
     with open(to, mode='w+b') as dest:
-        dest.write(msgpack.packb(data))
+        dest.write(to_persistence_format(data))
 
 
 def read_metadata(file: str) -> Any:
-    """Read application metadata from file."""
+    """Read application metadata from a file."""
     if not os.path.isfile(file):
         raise ValueError('Not a file.')
     with open(file, mode='r+b') as source:
         content = source.read()
 
-    return msgpack.unpackb(content, use_list=False, raw=False)
+    return from_persistence_format(content)
+
+
+def to_persistence_format(data: Any) -> Any:
+    """Transform application data to the format used for persistence."""
+    return msgpack.packb(data)
+
+
+def from_persistence_format(data: Any) -> Any:
+    """Transform persistence data to application data."""
+    return msgpack.unpackb(data, use_list=False, raw=False)
+
+
+def repository_index_file_path(repository_path: str) -> str:
+    """Construct the path for a repository index file."""
+    return os.path.join(repository_path, configuration.index_directory, configuration.index_file)
+
+
+def repository_tree_file_path(repository_path: str) -> str:
+    """Construct the path for a repository tree file."""
+    return os.path.join(repository_path, configuration.index_directory, configuration.tree_file)

@@ -156,18 +156,35 @@ class WebProxy(Proxy):
         super().__init__(url)
 
     def repository_index(self) -> Dict:  # noqa: D102
-        response = urllib.request.urlopen(self.url)
-        if response.code not in range(200, 299):
-            raise ConnectionError(response.reason)
-        bin_content = response.read()
+        index_url = self._append_path(
+            self.url,
+            configuration.index_directory,
+            configuration.index_file,
+        )
 
-        return utils.from_persistence_format(bin_content)
+        return utils.from_persistence_format(self._make_request(index_url))
 
     def repository_tree(self) -> Dict[str, int]:  # noqa: D102
         pass
 
     def sync_file(self, file: str) -> bytes:  # noqa: D102
         pass
+
+    def _make_request(self, url: str) -> bytes:
+        """Make a request to given url and return response content."""
+        response = urllib.request.urlopen(url)
+        if response.code not in range(200, 299):
+            raise ConnectionError(response.reason)
+
+        return response.read()
+
+    def _append_path(self, baseurl: str, *args) -> str:
+        """Appends segments to path of given url."""
+        res = baseurl
+        for segpath in args:
+            res = res if res.endswith('/') else res + '/'
+            res = res + segpath
+        return res
 
 
 class LocalProxy(Proxy):
