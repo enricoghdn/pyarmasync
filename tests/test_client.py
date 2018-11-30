@@ -24,11 +24,12 @@
 """Test suite for `pyarmasync.client`."""
 
 import os
-
-import pytest
+from builtins import ConnectionError
 
 import pyarmasync.client as unit
 import pyarmasync.configuration as configuration
+
+import pytest
 
 from .common import arg_in_call_list
 
@@ -120,4 +121,50 @@ def test_create_existing_no_overwrite(creation_mock):
     client = unit.Client.create(path, url, overwrite)
 
     creation_mock.read_metadata.assert_called()
-    assert client.remote.url == 'http://test'
+    assert client.proxy.url == 'http://test'
+
+
+@pytest.mark.parametrize('url,expType', [
+    ('http://weburl', unit.WebProxy),
+    ('https://secureweburl', unit.WebProxy),
+    ('file://localurl', unit.LocalProxy),
+])
+def test_proxy_creation_ok(url, expType):
+    """Assert Proxy object creation works with the supported options."""
+    proxy = unit.Proxy.factory(url)
+
+    assert isinstance(proxy, expType)
+
+
+def test_proxy_creation_unsupported():
+    """Assert error is raised for unsupported url in proxy creation."""
+    url = 'ftp://ftpurl'
+
+    with pytest.raises(ValueError):
+        unit.Proxy.factory(url)
+
+
+def test_web_proxy_make_request_ok(mocker):
+    """Assert http request is sent and response content is returned."""
+    urlopen_mock = mocker.patch('urllib.request.urlopen')
+    urlopen_mock.return_value.read.return_value = 'test'
+    urlopen_mock.return_value.code = 200
+
+    proxy = unit.Proxy.factory('http://weburl')
+
+    content = proxy._make_request('http://weburl')
+
+    urlopen_mock.assert_called_once()
+    assert content == 'test'
+
+
+def test_web_proxy_make_request_not_ok(mocker):
+    """Assert method raises error if response status code not ok."""
+    urlopen_mock = mocker.patch('urllib.request.urlopen')
+    urlopen_mock.return_value.code = 400
+    urlopen_mock.return_value.reason = 'test'
+
+    proxy = unit.Proxy.factory('http://weburl')
+
+    with pytest.raises(ConnectionError):
+        proxy._make_request('http://weburl')

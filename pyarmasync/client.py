@@ -95,22 +95,24 @@ class Proxy(metaclass=ABCMeta):
         else:
             raise ValueError('Unsupported scheme.')
 
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str) -> None:  # pragma: no-cover
         """Initialize object."""
         self._url = utils.RepositoryURL(url)
 
     @abstractmethod
-    def repository_index(self) -> Dict:
+    def repository_index(self) -> Dict:  # pragma: no-cover
         """Get repository index dictionary."""
         pass
 
     @abstractmethod
-    def repository_tree(self) -> Dict[str, int]:
+    def repository_tree(self) -> Dict[str, int]:  # pragma: no-cover
         """Get repository tree."""
+        pass
 
     @abstractmethod
-    def sync_file(self, file: str) -> bytes:
+    def sync_file(self, file: str) -> bytes:  # pragma: no-cover
         """Get sync file for `file`."""
+        pass
 
     @property
     def url(self) -> str:
@@ -118,7 +120,7 @@ class Proxy(metaclass=ABCMeta):
         return self._url.url
 
 
-class WebProxy(Proxy):
+class WebProxy(Proxy):  # noqa: D412
     r"""Proxy implementation for http/https protocols.
 
     This proxy will make http/https requests to the indicated repository url, thus a web server
@@ -149,9 +151,10 @@ class WebProxy(Proxy):
         - The relative path is based on the above mentioned configuration parameters.
         - The proxy will make a sync file request for every file in the repository. This accounts \
         for a total of N+2 requests where N is the amount of files contained by the repository.
+
     """
 
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str) -> None:  # pragma: no-cover
         """Initialize object."""
         super().__init__(url)
 
@@ -173,13 +176,15 @@ class WebProxy(Proxy):
     def _make_request(self, url: str) -> bytes:
         """Make a request to given url and return response content."""
         response = urllib.request.urlopen(url)
-        if response.code not in range(200, 299):
-            raise ConnectionError(response.reason)
+        # Disabling type check on usage of response object since no formal definition
+        # exists (see https://docs.python.org/3/library/urllib.request.html)
+        if response.code not in range(200, 299):  # type: ignore
+            raise ConnectionError(response.reason)  # type: ignore
 
         return response.read()
 
-    def _append_path(self, baseurl: str, *args) -> str:
-        """Appends segments to path of given url."""
+    def _append_path(self, baseurl: str, *args: str) -> str:
+        """Append segments to path of given url."""
         res = baseurl
         for segpath in args:
             res = res if res.endswith('/') else res + '/'
