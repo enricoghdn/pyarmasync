@@ -28,6 +28,7 @@ import urllib
 import urllib.request
 from abc import ABCMeta, abstractmethod
 from typing import Dict
+from pathlib import PurePath
 
 from . import configuration, utils
 
@@ -159,6 +160,7 @@ class WebProxy(Proxy):  # noqa: D412
         super().__init__(url)
 
     def repository_index(self) -> Dict:  # noqa: D102
+        # Build http url for index file
         index_url = self._append_path(
             self.url,
             configuration.index_directory,
@@ -189,6 +191,7 @@ class WebProxy(Proxy):  # noqa: D412
         for segpath in args:
             res = res if res.endswith('/') else res + '/'
             res = res + segpath
+
         return res
 
 
@@ -200,10 +203,34 @@ class LocalProxy(Proxy):
         super().__init__(url)
 
     def repository_index(self) -> Dict:  # noqa: D102
-        pass
+        # Build absolute file path from url
+        abspath = self._build_file_absolute_path_from_url(
+            self.url,
+            configuration.index_directory,
+            configuration.index_file
+        )
+
+        # Read file content then return it as proper dictionary
+        return utils.read_metadata(str(abspath))
 
     def repository_tree(self) -> Dict[str, int]:  # noqa: D102
         pass
 
     def sync_file(self, file: str) -> bytes:  # noqa: D102
         pass
+
+    def _build_file_absolute_path_from_url(self, url: str, *args: str) -> PurePath:
+        """Build an absolute path from given segments taking url as base."""
+        parsed = urllib.parse.urlparse(url)
+        if not parsed.netloc:
+            # Absolute path is given
+            abspath = PurePath(parsed.path)
+        else:
+            # Relative path is given
+            absolutized = os.path.abspath(parsed.netloc + parsed.path)
+            abspath = PurePath(absolutized)
+
+        for segment in args:
+            abspath = PurePath(abspath, segment)
+
+        return abspath
