@@ -29,6 +29,7 @@ import urllib.request
 from abc import ABCMeta, abstractmethod
 from typing import Dict
 from pathlib import PurePath
+from typing import Tuple
 
 from . import configuration, utils
 
@@ -68,9 +69,9 @@ class Client(object):
         index_file = os.path.join(index_dir, configuration.client_index)
 
         if not overwrite and cls.check_presence(client_path):
-                # Found existing client, not overwriting, read existing configuration
-                index_content = utils.read_metadata(index_file)
-                return cls(client_path, index_content['remote_url'])
+            # Found existing client, not overwriting, read existing configuration
+            index_content = utils.read_metadata(index_file)
+            return cls(client_path, index_content['remote_url'])
 
         # Create index directory and file
 
@@ -203,21 +204,20 @@ class LocalProxy(Proxy):
         super().__init__(url)
 
     def repository_index(self) -> Dict:  # noqa: D102
-        # Build absolute file path from url
-        abspath = self._build_file_absolute_path_from_url(
-            self.url,
-            configuration.index_directory,
-            configuration.index_file
-        )
-
-        # Read file content then return it as proper dictionary
-        return utils.read_metadata(str(abspath))
+        return self._do_read_file(self.url, configuration.index_directory,
+                                  configuration.index_file)
 
     def repository_tree(self) -> Dict[str, int]:  # noqa: D102
-        pass
+        return self._do_read_file(self.url, configuration.index_directory, configuration.tree_file)
 
     def sync_file(self, file: str) -> bytes:  # noqa: D102
+        # return self._do_read_file(self.url, file)
         pass
+
+    def _do_read_file(self, url: str, *args: str) -> Dict:
+        """Read repository info from file given the repo url and file path."""
+        abspath = self._build_file_absolute_path_from_url(url, *args)
+        return utils.read_metadata(str(abspath))
 
     def _build_file_absolute_path_from_url(self, url: str, *args: str) -> PurePath:
         """Build an absolute path from given segments taking url as base."""
