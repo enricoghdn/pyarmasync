@@ -27,9 +27,10 @@ import os
 import urllib
 import urllib.request
 from abc import ABCMeta, abstractmethod
-from typing import Dict
 from pathlib import PurePath
-from typing import Tuple
+from typing import Dict
+
+import pytest
 
 from . import configuration, utils
 
@@ -87,6 +88,7 @@ class Proxy(metaclass=ABCMeta):
     """Base class for proxy components."""
 
     @staticmethod
+    @pytest.mark.skip()
     def factory(url: str) -> 'Proxy':  # noqa: D401
         """Factory method to get the proper proxy based on the url scheme."""
         parsed = urllib.parse.urlparse(url)
@@ -97,21 +99,26 @@ class Proxy(metaclass=ABCMeta):
         else:
             raise ValueError('Unsupported scheme.')
 
+    @pytest.mark.skip()
     def __init__(self, url: str) -> None:  # pragma: no-cover
         """Initialize object."""
         self._url = utils.RepositoryURL(url)
 
     @abstractmethod
+    @pytest.mark.no_cover()
+    @pytest.mark.skip()
     def repository_index(self) -> Dict:  # pragma: no-cover
         """Get repository index dictionary."""
         pass
 
     @abstractmethod
+    @pytest.mark.skip()
     def repository_tree(self) -> Dict[str, int]:  # pragma: no-cover
         """Get repository tree."""
         pass
 
     @abstractmethod
+    @pytest.mark.skip()
     def sync_file(self, file: str) -> bytes:  # pragma: no-cover
         """Get sync file for `file`."""
         pass
@@ -156,7 +163,8 @@ class WebProxy(Proxy):  # noqa: D412
 
     """
 
-    def __init__(self, url: str) -> None:  # pragma: no-cover
+    @pytest.mark.skip()
+    def __init__(self, url: str) -> None:
         """Initialize object."""
         super().__init__(url)
 
