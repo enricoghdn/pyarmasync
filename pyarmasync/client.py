@@ -27,9 +27,8 @@ import os
 import urllib
 import urllib.request
 from abc import ABCMeta, abstractmethod
-from typing import Dict
 from pathlib import PurePath
-from typing import Tuple
+from typing import Dict
 
 from . import configuration, utils
 
@@ -97,22 +96,22 @@ class Proxy(metaclass=ABCMeta):
         else:
             raise ValueError('Unsupported scheme.')
 
-    def __init__(self, url: str) -> None:  # pragma: no-cover
+    def __init__(self, url: str) -> None:  # pragma: no cover
         """Initialize object."""
         self._url = utils.RepositoryURL(url)
 
     @abstractmethod
-    def repository_index(self) -> Dict:  # pragma: no-cover
+    def repository_index(self) -> Dict:  # pragma: no cover
         """Get repository index dictionary."""
         pass
 
     @abstractmethod
-    def repository_tree(self) -> Dict[str, int]:  # pragma: no-cover
+    def repository_tree(self) -> Dict[str, int]:  # pragma: no cover
         """Get repository tree."""
         pass
 
     @abstractmethod
-    def sync_file(self, file: str) -> bytes:  # pragma: no-cover
+    def sync_file(self, file: str) -> bytes:  # pragma: no cover
         """Get sync file for `file`."""
         pass
 
@@ -156,13 +155,13 @@ class WebProxy(Proxy):  # noqa: D412
 
     """
 
-    def __init__(self, url: str) -> None:  # pragma: no-cover
+    def __init__(self, url: str) -> None:  # pragma: no cover
         """Initialize object."""
         super().__init__(url)
 
     def repository_index(self) -> Dict:  # noqa: D102
         # Build http url for index file
-        index_url = self._append_path(
+        index_url = utils.build_url(
             self.url,
             configuration.index_directory,
             configuration.index_file,
@@ -171,10 +170,21 @@ class WebProxy(Proxy):  # noqa: D412
         return utils.from_persistence_format(self._make_request(index_url))
 
     def repository_tree(self) -> Dict[str, int]:  # noqa: D102
-        pass
+        tree_url = utils.build_url(
+            self.url,
+            configuration.index_directory,
+            configuration.tree_file,
+        )
+
+        return utils.from_persistence_format(self._make_request(tree_url))
 
     def sync_file(self, file: str) -> bytes:  # noqa: D102
-        pass
+        file_url = utils.build_url(
+            self.url,
+            file + configuration.extension,
+        )
+
+        return utils.from_persistence_format(self._make_request(file_url))
 
     def _make_request(self, url: str) -> bytes:
         """Make a request to given url and return response content."""
@@ -185,15 +195,6 @@ class WebProxy(Proxy):  # noqa: D412
             raise ConnectionError(response.reason)  # type: ignore
 
         return response.read()
-
-    def _append_path(self, baseurl: str, *args: str) -> str:
-        """Append segments to path of given url."""
-        res = baseurl
-        for segpath in args:
-            res = res if res.endswith('/') else res + '/'
-            res = res + segpath
-
-        return res
 
 
 class LocalProxy(Proxy):

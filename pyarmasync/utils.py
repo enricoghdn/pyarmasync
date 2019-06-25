@@ -105,3 +105,13 @@ def repository_index_file_path(repository_path: str) -> str:
 def repository_tree_file_path(repository_path: str) -> str:
     """Construct the path for a repository tree file."""
     return os.path.join(repository_path, configuration.index_directory, configuration.tree_file)
+
+
+def build_url(baseurl: str, *args: str) -> str:
+    """Append segments to path of given url."""
+    res = baseurl
+    for segpath in args:
+        res = res if res.endswith('/') else res + '/'
+        res = res + segpath
+
+    return res

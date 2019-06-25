@@ -28,6 +28,7 @@ from builtins import ConnectionError
 
 import pyarmasync.client as unit
 import pyarmasync.configuration as configuration
+import pyarmasync.utils as utils
 
 import pytest
 
@@ -142,6 +143,55 @@ def test_proxy_creation_unsupported():
 
     with pytest.raises(ValueError):
         unit.Proxy.factory(url)
+
+
+def test_web_proxy_repository_index(mocker):
+    """Assert repository index dictionary is fetched from URL and returned."""
+    fixture = {'foo': 'bar', 'baz': 3}
+    persistence_fixture = utils.to_persistence_format(fixture)
+
+    url = 'http://weburl/' + configuration.index_directory + '/' + configuration.index_file
+
+    make_request_mock = mocker.patch('pyarmasync.client.WebProxy._make_request')
+    make_request_mock.return_value = persistence_fixture
+
+    proxy = unit.Proxy.factory('http://weburl')
+
+    assert proxy.repository_index() == fixture
+    make_request_mock.assert_called_with(url)
+
+
+def test_web_proxy_repository_tree(mocker):
+    """Assert repository tree dictionary is fetched from URL and returned."""
+    fixture = {'foo': 1, 'bar': 2}
+    persistence_fixture = utils.to_persistence_format(fixture)
+
+    url = 'http://weburl/' + configuration.index_directory + '/' + configuration.tree_file
+
+    make_request_mock = mocker.patch('pyarmasync.client.WebProxy._make_request')
+    make_request_mock.return_value = persistence_fixture
+
+    proxy = unit.Proxy.factory('http://weburl')
+
+    assert proxy.repository_tree() == fixture
+    make_request_mock.assert_called_with(url)
+
+
+def test_web_proxy_sync_file(mocker):
+    """Assert repository sync file is fetched from URL and returned."""
+    fixture = 123456789
+    persistence_fixture = utils.to_persistence_format(fixture)
+
+    filename = 'test'
+    url = 'http://weburl/' + filename
+
+    make_request_mock = mocker.patch('pyarmasync.client.WebProxy._make_request')
+    make_request_mock.return_value = persistence_fixture
+
+    proxy = unit.Proxy.factory('http://weburl')
+
+    assert proxy.sync_file(file=filename) == fixture
+    make_request_mock.assert_called_with(url + configuration.extension)
 
 
 def test_web_proxy_make_request_ok(mocker):
