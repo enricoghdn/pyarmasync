@@ -22,13 +22,14 @@
 # --------------------------------License Notice----------------------------------
 
 """Test suite for `pyarmasync.utils`."""
+import os
 
 import msgpack
+import pytest
 
+import pyarmasync.configuration
 import pyarmasync.exceptions as exceptions
 import pyarmasync.utils as unit
-
-import pytest
 
 
 @pytest.mark.parametrize('url', [
@@ -96,3 +97,21 @@ def test_read_metadata_not_a_file(mocker):
 
     with pytest.raises(ValueError):
         unit.read_metadata('file')
+
+
+def test_repository_index_file_path(mocker):
+    """Assert correct path to repository index file is returned."""
+    repo_base_path = '/'
+    path = unit.repository_index_file_path(repo_base_path)
+
+    assert path == os.path.join(repo_base_path, pyarmasync.configuration.index_directory,
+                                pyarmasync.configuration.index_file)
+
+
+def test_repository_tree_file_path():
+    """Assert correct pat to repository tree file is returned."""
+    repo_base_path = '/'
+    path = unit.repository_tree_file_path(repo_base_path)
+
+    assert path == os.path.join(repo_base_path, pyarmasync.configuration.index_directory,
+                           pyarmasync.configuration.tree_file)
